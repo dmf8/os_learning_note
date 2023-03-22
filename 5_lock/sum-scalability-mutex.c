@@ -2,7 +2,7 @@
 #include "thread-sync.h"
 
 #define N 10000000
-spinlock_t lock = SPIN_INIT();
+mutex_t lock = MUTEX_INIT();
 
 long n, sum = 0;
 
@@ -10,9 +10,9 @@ void Tsum()
 {
     for (int i = 0; i < n; i++)
     {
-        spin_lock(&lock);
+        mutex_lock(&lock);
         sum++;
-        spin_unlock(&lock);
+        mutex_unlock(&lock);
     }
 }
 
