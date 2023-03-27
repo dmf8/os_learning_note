@@ -50,7 +50,7 @@ void Tsync() {
     while (1) {
         x = y = 0;
         __sync_synchronize(); //full barrier
-        usleep(1);
+        //usleep(1);
         assert(FLAG == 0);
         FLAG_XOR(3);
         WAIT_FOR(FLAG == 0);
