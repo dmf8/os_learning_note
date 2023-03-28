@@ -2,10 +2,22 @@
 #include <pthread.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <time.h>
 
 pthread_mutex_t lk = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cv = PTHREAD_COND_INITIALIZER;
-int N, count = 0;
+int count = 0;
+int head_dir;
+enum HeadDirection
+{
+    HeadLeft,
+    HeadRight,
+};
+
+void CountChange()
+{
+    count = ++count % 4;
+}
 
 void t_create(void (*f)(void))
 {
@@ -18,15 +30,23 @@ void Tp()
     while (1)
     {
         pthread_mutex_lock(&lk);
-        while (N == count) // when awaked, check condition again
+        while (!(0 == count))
         {
             pthread_cond_wait(&cv, &lk);
         }
-        count++;
-        printf("(");
+        head_dir = rand() % 2;
+        CountChange();
+        switch (head_dir)
+        {
+        case HeadLeft:
+            printf("<");
+            break;
+        default:
+            printf(">");
+            break;
+        }
         pthread_mutex_unlock(&lk);
-        // pthread_cond_broadcast(&cv); // notice all threads
-        pthread_cond_signal(&cv);
+        pthread_cond_broadcast(&cv);
     }
 }
 void Tc()
@@ -34,22 +54,30 @@ void Tc()
     while (1)
     {
         pthread_mutex_lock(&lk);
-        while (0 == count)
+        while (!(0 != count))
         {
             pthread_cond_wait(&cv, &lk);
         }
-        count--;
-        printf(")");
+        switch (head_dir)
+        {
+        case HeadLeft:
+            printf("><_");
+            break;
+        default:
+            printf("<>_");
+            break;
+        }
+        CountChange();
+        CountChange();
+        CountChange();
         pthread_mutex_unlock(&lk);
-        // pthread_cond_broadcast(&cv);
-        pthread_cond_signal(&cv);
+        pthread_cond_broadcast(&cv);
     }
 }
 
 int main(int argc, char **argv)
 {
-    assert(2 == argc);
-    N = atoi(argv[1]);
+    srand(time(NULL));
 
     setbuf(stdout, NULL);
 
